@@ -1,9 +1,10 @@
 const { GraphQLObjectType, GraphQLString} = require('graphql');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const CFG = require('../config/cfg');
 
 const UserQuery = new GraphQLObjectType({
-    name: 'RootQueryType',
+    name: 'UserQueryType',
     fields: {
       login: {
         type: GraphQLString,

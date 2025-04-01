@@ -1,69 +1,78 @@
 import { Injectable } from '@angular/core';
+import { Apollo } from 'apollo-angular';
+import { Observable} from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { Employee } from '../data-models/employee-type';
+import { 
+  GET_ALL_EMPLOYEES,
+  SEARCH_EMPLOYEE_BY_ID
+} from '../graphql/employee.queries';
+import { 
+  DELETE_EMPLOYEE_BY_ID,
+  ADD_EMPLOYEE, 
+  UPDATE_EMPLOYEE
+} from '../graphql/employee.mutations';
 
-export type Employee = {
-  _id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  gender: string;
-  designation: string;
-  salary: number;
-  date_of_joining: string;
-  department: string;
-  employee_photo: string;
-  created_at: string;
-  updated_at: string;
-};
 @Injectable({
   providedIn: 'root'
 })
 export class EmployeeService {
+  error: string = '';
+ 
+  constructor(private apollo: Apollo) { }
 
-  employees: Employee[] = [
-    {
-      _id: '1kwod',
-      first_name: "David",
-      last_name: "Huffman",
-      email: "david@huf@gmail.com",
-      gender: "F",
-      designation: "manager",
-      salary: 180000,
-      date_of_joining: '19970107',
-      department: "computers",
-      employee_photo: "dh.jpg",
-      created_at: "20250303",
-      updated_at: "20250303"
-    },
-    {
-      _id: '1k9od',
-      first_name: "Maddie",
-      last_name: "Huffman",
-      email: "madie@huf@gmail.com",
-      gender: "M",
-      designation: "reception",
-      salary: 2000,
-      date_of_joining: '19920107',
-      department: "computers",
-      employee_photo: "mh.jpg",
-      created_at: "20200203",
-      updated_at: "20220203"
-    },
-    {
-      _id: '1p9od',
-      first_name: "Eugene",
-      last_name: "Tere",
-      email: "eu@te@gmail.com",
-      gender: "M",
-      designation: "programmer",
-      salary: 1000,
-      date_of_joining: '20050109',
-      department: "computers",
-      employee_photo: "et.jpg",
-      created_at: "20240903",
-      updated_at: "20250203"
-    }
+  getEmployees(): Observable<Employee[]> {
+    return this.apollo.watchQuery<{ getAllEmployees: Employee[] }>({
+      query: GET_ALL_EMPLOYEES,
+      fetchPolicy: 'no-cache'
+    }).valueChanges.pipe(
+      map((result) => result.data.getAllEmployees) 
+    );
+  }
 
-  ];
+  getEmployeeById(id: String): Observable<Employee> {
+    return this.apollo.query<{ searchEmployeeByEid: Employee }>({
+      query: SEARCH_EMPLOYEE_BY_ID,
+      fetchPolicy: 'no-cache',
+      variables: { id }
+    }).pipe(
+      map(result => result.data.searchEmployeeByEid)
+    );
+  }
 
-  constructor() { }
+  addEmployee(employee: Employee): Observable<any> {
+    return this.apollo.mutate({
+      mutation: ADD_EMPLOYEE,
+      variables: employee,
+      refetchQueries: [{ query: GET_ALL_EMPLOYEES }],
+      fetchPolicy: 'no-cache'
+    });
+  }
+
+  updateEmployee(employee: Employee): Observable<any> {
+    return this.apollo.mutate({
+      mutation: UPDATE_EMPLOYEE,
+      variables: {
+        eid: employee._id,
+        first_name: employee.first_name,
+        last_name: employee.last_name,
+        email: employee.email,
+        gender: employee.gender,
+        designation: employee.designation,
+        salary: employee.salary,
+        date_of_joining: employee.date_of_joining,
+        department: employee.department
+      },
+      refetchQueries: [{ query: GET_ALL_EMPLOYEES }],
+      fetchPolicy: 'no-cache'
+    });
+  }
+
+  deleteEmployee(id: String): Observable<any> {
+    return this.apollo.mutate({
+      mutation: DELETE_EMPLOYEE_BY_ID,
+      variables: { id },
+      refetchQueries: [{ query: GET_ALL_EMPLOYEES }]
+    });
+  }
 }

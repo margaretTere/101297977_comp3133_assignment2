@@ -8,12 +8,16 @@
       "node"
     ]
   },
-  "files": [
-    "src/main.ts",
-    "src/main.server.ts",
-    "src/server.ts"
-  ],
-  "include": [
-    "src/**/*.d.ts"
-  ]
+  "files": ["src/main.ts"],
+"include": [
+  "src/**/*.d.ts",
+  "src/**/*.ts"
+],
+"exclude": [
+  "**/*.spec.ts",
+  "**/*.server.ts",
+  "**/*.server_old.ts"
+]
+
+
 }
